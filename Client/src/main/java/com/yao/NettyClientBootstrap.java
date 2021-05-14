@@ -44,7 +44,7 @@ public class NettyClientBootstrap {
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
             @Override
             protected void initChannel(SocketChannel socketChannel) throws Exception {
-                socketChannel.pipeline().addLast(new IdleStateHandler(20,10,0));
+                socketChannel.pipeline().addLast(new IdleStateHandler(200,100,0));
                 socketChannel.pipeline().addLast(new ObjectEncoder());
                 socketChannel.pipeline().addLast(new ObjectDecoder(ClassResolvers.cacheDisabled(null)));
                 socketChannel.pipeline().addLast(new NettyClientHandler());
@@ -64,13 +64,13 @@ public class NettyClientBootstrap {
         loginMsg.setPassword("yao");
         loginMsg.setUserName("robin");
         bootstrap.socketChannel.writeAndFlush(loginMsg);
-        while (true){
-            TimeUnit.SECONDS.sleep(3);
+        //while (true){
+            //TimeUnit.SECONDS.sleep(3);
             AskMsg askMsg=new AskMsg();
             AskParams askParams=new AskParams();
             askParams.setAuth("authToken");
             askMsg.setParams(askParams);
             bootstrap.socketChannel.writeAndFlush(askMsg);
-        }
+        //}
     }
 }

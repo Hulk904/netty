@@ -1,10 +1,13 @@
 package com.yao;
 
 import com.yao.module.*;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.ReferenceCountUtil;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by yaozb on 15-4-11.
@@ -12,6 +15,7 @@ import io.netty.util.ReferenceCountUtil;
 public class NettyServerHandler extends SimpleChannelInboundHandler<BaseMsg> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        System.out.println("channel inactive");
         NettyChannelMap.remove((SocketChannel)ctx.channel());
     }
     @Override
@@ -41,10 +45,19 @@ public class NettyServerHandler extends SimpleChannelInboundHandler<BaseMsg> {
                 //收到客户端的请求
                 AskMsg askMsg=(AskMsg)baseMsg;
                 if("authToken".equals(askMsg.getParams().getAuth())){
-                    ReplyServerBody replyBody=new ReplyServerBody("server info $$$$ !!!");
+                    ReplyServerBody replyBody=new ReplyServerBody("server info hi !!!");
                     ReplyMsg replyMsg=new ReplyMsg();
                     replyMsg.setBody(replyBody);
-                    NettyChannelMap.get(askMsg.getClientId()).writeAndFlush(replyMsg);
+                    try {
+                        for (int i = 1; i < 100; i++) {
+                            System.out.println("server send.");
+                            ChannelFuture result = NettyChannelMap.get(askMsg.getClientId()).writeAndFlush(replyMsg);
+                            result.get();
+                            TimeUnit.SECONDS.sleep(2);
+                        }
+                    }catch (Exception exc){
+                        System.out.println(exc.getMessage());
+                    }
                 }
             }break;
             case REPLY:{
